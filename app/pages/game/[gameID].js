@@ -1,15 +1,23 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import GamePlayerSection from "../../components/GamePlayerSection";
+import GamePlayerSection from "../../components/GamePlayerSection/GamePlayerSection";
 import styles from "../../styles/Game.module.css";
-import GameContext from "../../contexts/game";
+import { useGameContext } from "../../contexts/gameContext";
+import Environment from "../../components/Environment/Environment";
 
 const Game = () => {
   const router = useRouter();
   const { gameID } = router.query;
-
   const [dimensions, setDimensions] = useState({ height: 0, width: 0 });
   const [scale, setScale] = useState(1);
+
+  const { initGameState, gameState } = useGameContext();
+
+  useEffect(() => {
+    if (!!gameID) {
+      initGameState(gameID);
+    }
+  }, [gameID]);
 
   useEffect(() => {
     const onResize = () => {
@@ -26,21 +34,17 @@ const Game = () => {
     onResize();
   }, []);
 
-  console.log(`i am game ${gameID}`);
-
   return (
-    <GameContext.Provider
-      value={{
-        scale,
-      }}
+    <div
+      className={styles.game}
+      style={{ height: dimensions.height, width: dimensions.width }}
     >
-      <div
-        className={styles.game}
-        style={{ height: dimensions.height, width: dimensions.width }}
-      >
-        <GamePlayerSection />
-      </div>
-    </GameContext.Provider>
+      {gameState?.players &&
+        Object.keys(gameState.players).map((name) => {
+          return <GamePlayerSection id={name} />;
+        })}
+      <Environment />
+    </div>
   );
 };
 

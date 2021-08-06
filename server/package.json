@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "dev": "nodemon -r esm app.js",
+    "start": "node -r esm app.js"
+  },
+  "dependencies": {
+    "@feathersjs/errors": "^4.5.11",
+    "@feathersjs/express": "^4.5.11",
+    "@feathersjs/feathers": "^4.5.11",
+    "@feathersjs/socketio": "^4.5.11",
+    "esm": "^3.2.25",
+    "feathers-memory": "^4.1.0",
+    "feathers-nedb": "^5.1.0",
+    "feathers-reactive": "^0.8.2",
+    "nedb": "^1.8.0",
+    "nodemon": "^2.0.12"
+  }
+}
