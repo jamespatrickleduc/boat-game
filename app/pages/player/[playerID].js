@@ -13,32 +13,48 @@ const Player = () => {
   const { playerID } = router.query;
 
   const { gameState, initPlayerState, buyEquipment } = useGameContext();
-  const playerState = gameState?.players?.[playerID];
+  const playerState = gameState?.["player." + playerID];
+  console.log(playerState);
 
   const [ready, setReady] = useState(false);
   const [location, setLocation] = useState("RIVER");
   const [fish, setFish] = useState("TROUT");
+  const [isFishing, setIsFishing] = useState(false);
 
   useEffect(() => {
     if (!playerID) return;
-    console.log(playerState);
-    initPlayerState(playerID);
+    initPlayerState(playerID).then((res) => {
+      console.log("im the resolved promise!", res);
+
+      const player = res["player." + playerID];
+      console.log(player);
+      setLocation(player.location);
+      setFish(player.fish);
+      setReady(player.ready);
+    });
   }, [playerID]);
 
-  useEffect(() => {
+  const updatePlayer = () => {
     if (Object.keys(gameState).length === 0) return;
-    console.log(gameState);
-    let players = Object.assign({}, gameState.players);
-    players[playerID].ready = ready;
-    players[playerID].equipment = gameState.players[playerID].equipment;
+    let player = gameState["player." + playerID];
+    player.ready = ready;
+    player.location = location;
+    player.fish = fish;
 
-    client
-      .service("games")
-      .patch("123", { players })
-      .then((res) => {
-        console.log(playerState);
-      });
+    client.service("games").patch("123", { ["player." + playerID]: player });
+  };
+
+  useEffect(() => {
+    updatePlayer();
   }, [ready]);
+
+  useEffect(() => {
+    if (gameState?.isFishing) {
+      console.log("were fishing!");
+      setIsFishing(true);
+      setReady(false);
+    } else setIsFishing(false);
+  }, [gameState?.isFishing]);
 
   return (
     <div style={{ margin: 20 }}>
@@ -48,22 +64,24 @@ const Player = () => {
             <div>Name:{playerState.name} </div>
             <div>
               {Object.entries(LOCATION).map(([key, value], i) => {
-                const variant = (function () {
+                const disabled = (function () {
                   if (
                     value.requirements &&
                     !includesArray(playerState.equipment, value.requirements)
                   )
-                    return "disabled";
-                  return key === location ? "contained" : "outlined";
+                    return true;
+                  return false;
                 })();
 
                 return (
                   <Button
-                    key={i}
+                    key={key + i}
                     style={{ margin: 10 }}
-                    variant={variant}
+                    variant={key === location ? "contained" : "outlined"}
                     color="primary"
+                    disabled={disabled}
                     onClick={() => {
+                      if (location === key) return;
                       setLocation(key);
                       setFish(null);
                       setReady(false);
@@ -77,23 +95,26 @@ const Player = () => {
             <div>
               {Object.entries(LOCATION[location].fish).map(
                 ([key, value], i) => {
-                  const variant = (function () {
+                  const disabled = (function () {
                     const f = FISH[key];
                     if (
                       f.requirements &&
                       !includesArray(playerState.equipment, f.requirements)
                     )
-                      return "disabled";
-                    return key === fish ? "contained" : "outlined";
+                      return true;
+
+                    return false;
                   })();
 
                   return (
                     <Button
-                      key={i}
+                      key={key + i}
                       style={{ margin: 10 }}
-                      variant={variant}
+                      variant={key === fish ? "contained" : "outlined"}
                       color="primary"
+                      disabled={disabled}
                       onClick={() => {
+                        if (location === key) return;
                         setFish(key);
                         setReady(false);
                       }}
@@ -106,14 +127,15 @@ const Player = () => {
             </div>
             <div>
               <Button
-                variant={playerState.ready ? "contained" : "outlined"}
+                variant={ready ? "contained" : "outlined"}
                 color="primary"
                 style={{ width: 150 }}
+                disabled={isFishing}
                 onClick={() => {
                   setReady(!ready);
                 }}
               >
-                {playerState.ready ? "READY" : "NOT READY"}
+                {ready ? "READY" : "NOT READY"}
               </Button>
             </div>
           </Card>
@@ -127,7 +149,9 @@ const Player = () => {
                 return (
                   <div style={{ margin: 10 }}>
                     <Button
-                      variant={owned ? "disabled" : "contained"}
+                      key={key + i}
+                      variant={owned ? "outlined" : "contained"}
+                      disabled={owned}
                       color={canAfford ? "primary" : "error"}
                       onClick={() => {
                         buyEquipment(playerID, key);

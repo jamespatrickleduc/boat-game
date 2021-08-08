@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import client from "../feathersClient";
-import { EQUIPMENT } from "../../constants/constants";
+import { EQUIPMENT, FISH, LOCATION } from "../../constants/constants";
 
 const GameContext = createContext({});
 
@@ -13,7 +13,7 @@ export const GameContextProvider = ({ children }) => {
       .watch()
       .get(gameID)
       .subscribe((res) => {
-        console.log(res);
+        // console.log(res);
         setGameState(res);
       });
   };
@@ -27,24 +27,89 @@ export const GameContextProvider = ({ children }) => {
         console.log(res);
         setGameState(res);
       });
+
+    const promise = new Promise((resolve, reject) => {
+      client
+        .service("games")
+        .get("123")
+        .then((res) => {
+          console.log(res);
+          resolve(res);
+        })
+        .catch((e) => {
+          reject(e);
+        });
+    });
+
+    return promise;
   };
 
-  const togglePlayerReady = (playerID) => {};
+  const animateFishing = () => {
+    const iterations = Math.max(
+      ...Object.values(gameState.catch).map((el) => el.length)
+    );
+
+    let i = 0;
+    const interval = setInterval(() => {
+      // console.log("animate fishing");
+
+      const newState = Object.assign({}, gameState);
+
+      gameState.players.forEach((playerID) => {
+        const fish = gameState.catch["player." + playerID].shift();
+        const { location } = gameState["player." + playerID];
+        // console.log(location, fish);
+        if (fish) {
+          newState["player." + playerID].gold += FISH[fish].gold;
+          newState.locations[location][fish]--;
+        }
+      });
+
+      i++;
+      if (i >= iterations) {
+        clearInterval(interval);
+        newState.isFishing = false;
+        newState.catch = {};
+
+        // restock fish
+        Object.entries(newState.locations).forEach(([location, value]) => {
+          Object.keys(value).forEach((fish) => {
+            newState.locations[location][fish] +=
+              LOCATION[location].fish[fish].regen;
+            newState.locations[location][fish] = Math.min(
+              newState.locations[location][fish],
+              LOCATION[location].fish[fish].max
+            );
+          });
+        });
+
+        client.service("games").patch("123", newState);
+      }
+
+      setGameState(newState);
+    }, 2000);
+  };
 
   const buyEquipment = (playerID, equipment) => {
-    const players = gameState.players;
-    if (players[playerID].gold < EQUIPMENT[equipment].cost) return;
-    if (players[playerID].equipment.includes(equipment)) return;
+    const player = gameState["player." + playerID];
+    if (player.gold < EQUIPMENT[equipment].cost) return;
+    if (player.equipment.includes(equipment)) return;
 
-    players[playerID].gold -= EQUIPMENT[equipment].cost;
-    players[playerID].equipment = [equipment, ...players[playerID].equipment];
+    player.gold -= EQUIPMENT[equipment].cost;
+    player.equipment = [equipment, ...player.equipment];
 
-    client.service("games").patch("123", { players });
+    client.service("games").patch("123", { ["player." + playerID]: player });
   };
 
   return (
     <GameContext.Provider
-      value={{ gameState, initGameState, initPlayerState, buyEquipment }}
+      value={{
+        gameState,
+        initGameState,
+        initPlayerState,
+        buyEquipment,
+        animateFishing,
+      }}
     >
       {children}
     </GameContext.Provider>

@@ -7,7 +7,7 @@ import Card from "@material-ui/core/Card";
 
 const GamePlayerSection = ({ id }) => {
   const { gameState } = useGameContext();
-  const playerState = gameState?.players?.[id];
+  const playerState = gameState["player." + id];
 
   return (
     <div className={styles.player}>

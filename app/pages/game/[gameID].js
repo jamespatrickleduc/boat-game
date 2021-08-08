@@ -11,7 +11,7 @@ const Game = () => {
   const [dimensions, setDimensions] = useState({ height: 0, width: 0 });
   const [scale, setScale] = useState(1);
 
-  const { initGameState, gameState } = useGameContext();
+  const { initGameState, gameState, animateFishing } = useGameContext();
 
   useEffect(() => {
     if (!!gameID) {
@@ -34,15 +34,24 @@ const Game = () => {
     onResize();
   }, []);
 
+  useEffect(() => {
+    if (gameState?.isFishing) {
+      animateFishing();
+    }
+  }, [gameState?.isFishing]);
+
   return (
     <div
       className={styles.game}
       style={{ height: dimensions.height, width: dimensions.width }}
     >
       {gameState?.players &&
-        Object.keys(gameState.players).map((name) => {
-          return <GamePlayerSection id={name} />;
+        gameState.players.map((name) => {
+          return <GamePlayerSection key={name} id={name} />;
         })}
+      {gameState?.isFishing && (
+        <div style={{ textAlign: "center" }}>--- FISHING ---</div>
+      )}
       <Environment />
     </div>
   );

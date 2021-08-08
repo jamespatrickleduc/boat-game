@@ -38,20 +38,28 @@ export const FISH = {
   [F.TROUT]: {
     name: "Trout",
     gold: 1,
+    chance: 1,
+    img: "/fish.png",
   },
   [F.LOBSTER]: {
     name: "Lobster",
     gold: 2,
+    chance: 0.5,
+    img: "/lobster.png",
     requirements: [E.LOBSTERPOT],
   },
   [F.SQUID]: {
     name: "Squid",
     gold: 1,
+    chance: 1,
+    img: "/squid.png",
     requirements: [E.NET],
   },
   [F.TUNA]: {
     name: "Tuna",
     gold: 3,
+    img: "/fish.png",
+    chance: 0.33,
   },
 };
 
@@ -62,7 +70,7 @@ export const LOCATION = {
     fish: {
       [F.TROUT]: {
         max: 14,
-        regen: 7,
+        regen: 3,
       },
     },
   },
@@ -71,11 +79,11 @@ export const LOCATION = {
     fish: {
       [F.TROUT]: {
         max: 10,
-        regen: 5,
+        regen: 2,
       },
       [F.LOBSTER]: {
         max: 10,
-        regen: 5,
+        regen: 3,
       },
     },
   },
@@ -85,11 +93,11 @@ export const LOCATION = {
     fish: {
       [F.SQUID]: {
         max: 10,
-        regen: 5,
+        regen: 3,
       },
       [F.TUNA]: {
         max: 10,
-        regen: 5,
+        regen: 3,
       },
     },
   },
