@@ -1,9 +1,6 @@
 import { useContext } from "react";
 import { TYPES, LOCATION, FISH } from "../../../constants/constants";
-import {
-  GameContextProvider,
-  useGameContext,
-} from "../../contexts/gameContext";
+import { useGameContext } from "../../contexts/gameContext";
 import Image from "next/image";
 
 import styles from "../../styles/Location.module.css";
@@ -21,7 +18,7 @@ const Location = ({ name }) => {
       .map((playerID) => {
         const fish = gameState.catch["player." + playerID][0];
         const caughtOne = !!fish;
-        console.log(playerID, gameState.catch["player." + playerID]);
+        // console.log(playerID, gameState.catch["player." + playerID]);
 
         if (gameState["player." + playerID]?.location === name) {
           return (

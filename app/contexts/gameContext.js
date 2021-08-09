@@ -6,6 +6,7 @@ const GameContext = createContext({});
 
 export const GameContextProvider = ({ children }) => {
   const [gameState, setGameState] = useState({});
+  const [displayTurn, setDisplayTurn] = useState(1);
 
   const initGameState = (gameID) => {
     client
@@ -109,6 +110,7 @@ export const GameContextProvider = ({ children }) => {
         initPlayerState,
         buyEquipment,
         animateFishing,
+        displayTurn,
       }}
     >
       {children}

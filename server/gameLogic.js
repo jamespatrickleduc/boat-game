@@ -1,4 +1,4 @@
-import { LOCATION, FISH, TYPES } from "../constants/constants";
+import { LOCATION, FISH, TYPES, TURN_LIMIT } from "../constants/constants";
 const L = TYPES.LOCATION;
 const F = TYPES.FISH;
 
@@ -10,11 +10,13 @@ const initialize = (app) => {
     id: "123",
     isFishing: false,
     catch: {},
+    gameOver: false,
+    turn: 0,
     players: ["one", "two"],
     "player.one": {
       ready: false,
       name: "Amos",
-      gold: 90,
+      gold: 0,
       equipment: [],
       fish: F.TROUT,
       location: L.RIVER,
@@ -54,10 +56,18 @@ const attachSubscriptions = () => {
       const allReady = res.players
         .map((playerID) => res["player." + playerID].ready)
         .reduce((acc, cur) => acc && cur, true);
-      console.log(allReady);
-      console.log(res);
-      if (allReady && !res.isFishing) {
-        goFishing("123");
+      // console.log(allReady);
+      // console.log(res);
+
+      if (!res.gameOver) {
+        if (allReady && !res.isFishing) {
+          goFishing("123");
+        }
+        if (res.turn >= TURN_LIMIT) {
+          endGame("123");
+        }
+      } else {
+        console.log("the game is over");
       }
     });
 };
@@ -88,6 +98,15 @@ const goFishing = (gameID) => {
         gameState.catch["player." + playerID].push(caughtOne ? fish : null);
       });
     }
+    gameState.turn++;
+    games.patch(gameID, gameState);
+  });
+};
+
+const endGame = (gameID) => {
+  console.log("end game", gameID);
+  games.get(gameID).then((gameState) => {
+    gameState.gameOver = true;
 
     games.patch(gameID, gameState);
   });
