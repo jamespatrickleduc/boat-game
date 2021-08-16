@@ -15,7 +15,7 @@ const Game = () => {
 
   useEffect(() => {
     if (!!gameID) {
-      initGameState(gameID);
+      initGameState(gameID).then((res) => {});
     }
   }, [gameID]);
 

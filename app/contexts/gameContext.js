@@ -7,6 +7,7 @@ const GameContext = createContext({});
 export const GameContextProvider = ({ children }) => {
   const [gameState, setGameState] = useState({});
   const [displayTurn, setDisplayTurn] = useState(1);
+  const [displayGameOver, setDisplayGameOver] = useState(false);
 
   const initGameState = (gameID) => {
     client
@@ -14,35 +15,28 @@ export const GameContextProvider = ({ children }) => {
       .watch()
       .get(gameID)
       .subscribe((res) => {
-        // console.log(res);
-        setGameState(res);
-      });
-  };
-
-  const initPlayerState = (playerID) => {
-    client
-      .service("games")
-      .watch()
-      .get("123")
-      .subscribe((res) => {
-        console.log(res);
         setGameState(res);
       });
 
-    const promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       client
         .service("games")
         .get("123")
         .then((res) => {
           console.log(res);
+          setDisplayTurn(res.turn + 1);
+          setDisplayGameOver(res.gameOver);
           resolve(res);
         })
         .catch((e) => {
           reject(e);
         });
     });
+  };
 
-    return promise;
+  const initPlayerState = (playerID) => {
+    // get gameID that playerID is associated with
+    return initGameState("123");
   };
 
   const animateFishing = () => {
@@ -72,6 +66,9 @@ export const GameContextProvider = ({ children }) => {
         newState.isFishing = false;
         newState.catch = {};
 
+        if (!gameState.gameOver) setDisplayTurn(gameState.turn + 1);
+        else setDisplayGameOver(true);
+
         // restock fish
         Object.entries(newState.locations).forEach(([location, value]) => {
           Object.keys(value).forEach((fish) => {
@@ -83,7 +80,6 @@ export const GameContextProvider = ({ children }) => {
             );
           });
         });
-
         client.service("games").patch("123", newState);
       }
 
@@ -111,6 +107,7 @@ export const GameContextProvider = ({ children }) => {
         buyEquipment,
         animateFishing,
         displayTurn,
+        displayGameOver,
       }}
     >
       {children}

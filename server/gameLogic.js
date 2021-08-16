@@ -15,7 +15,7 @@ const initialize = (app) => {
     players: ["one", "two"],
     "player.one": {
       ready: false,
-      name: "Amos",
+      name: "Jendy",
       gold: 0,
       equipment: [],
       fish: F.TROUT,
@@ -23,7 +23,7 @@ const initialize = (app) => {
     },
     "player.two": {
       ready: false,
-      name: "Brian",
+      name: "Patrick",
       gold: 0,
       equipment: [],
       fish: F.TROUT,
@@ -57,14 +57,11 @@ const attachSubscriptions = () => {
         .map((playerID) => res["player." + playerID].ready)
         .reduce((acc, cur) => acc && cur, true);
       // console.log(allReady);
-      // console.log(res);
+      console.log(res);
 
       if (!res.gameOver) {
         if (allReady && !res.isFishing) {
           goFishing("123");
-        }
-        if (res.turn >= TURN_LIMIT) {
-          endGame("123");
         }
       } else {
         console.log("the game is over");
@@ -99,15 +96,8 @@ const goFishing = (gameID) => {
       });
     }
     gameState.turn++;
-    games.patch(gameID, gameState);
-  });
-};
-
-const endGame = (gameID) => {
-  console.log("end game", gameID);
-  games.get(gameID).then((gameState) => {
-    gameState.gameOver = true;
-
+    // end game
+    if (gameState.turn >= TURN_LIMIT) gameState.gameOver = true;
     games.patch(gameID, gameState);
   });
 };

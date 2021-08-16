@@ -103,4 +103,4 @@ export const LOCATION = {
   },
 };
 
-export const TURN_LIMIT = 2;
+export const TURN_LIMIT = 10;

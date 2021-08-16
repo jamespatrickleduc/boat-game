@@ -33,7 +33,7 @@ for (const name of Object.keys(nets)) {
     }
   }
 }
-console.log(`LAN IP IS: ${results.Ethernet[0]}`);
+console.log(results);
 
 app
   .listen(3030)
